@@ -16,8 +16,10 @@ import Tuple
 type alias Cell =
     ( Int, Int )
 
+
 type alias BoardSize =
     ( Int, Int )
+
 
 type alias Model =
     { path : List Cell
@@ -26,65 +28,84 @@ type alias Model =
     , size : BoardSize
     }
 
+
 type Msg
     = Tick Time.Posix
     | SetStart Cell
     | SetSize BoardSize
     | SetPause Float
 
-boardsize_width: BoardSize -> Int
+
+boardsize_width : BoardSize -> Int
 boardsize_width bs =
     Tuple.second bs
 
-boardsize_height: BoardSize -> Int
+
+boardsize_height : BoardSize -> Int
 boardsize_height bs =
     Tuple.first bs
 
-boardsize_dec: Int -> Int
+
+boardsize_dec : Int -> Int
 boardsize_dec n =
     let
-        minimum_size = 3
+        minimum_size =
+            3
     in
-        if n <= minimum_size then
-            minimum_size
-        else
-            n - 1
-boardsize_inc: Int -> Int
+    if n <= minimum_size then
+        minimum_size
+
+    else
+        n - 1
+
+
+boardsize_inc : Int -> Int
 boardsize_inc n =
     let
-        maximum_size = 40
+        maximum_size =
+            40
     in
-        if n >= maximum_size then
-            maximum_size
-        else
-            n + 1
+    if n >= maximum_size then
+        maximum_size
 
-pause_inc: Float -> Float
+    else
+        n + 1
+
+
+pause_inc : Float -> Float
 pause_inc n =
     n + 10
 
+
+
 -- decreasing pause time (ms) increases speed
-pause_dec: Float -> Float
+
+
+pause_dec : Float -> Float
 pause_dec n =
     let
-        minimum_pause = 0
+        minimum_pause =
+            0
     in
-        if n <= minimum_pause then
-            minimum_pause
-        else
-            n - 10
+    if n <= minimum_pause then
+        minimum_pause
+
+    else
+        n - 10
+
 
 board_init : BoardSize -> List Cell
 board_init board_size =
-            List.range 0 (boardsize_height board_size - 1)
-                |> andThen
-                    (\r ->
-                        List.range 0 (boardsize_width board_size - 1)
-                            |> andThen
-                                (\c ->
-                                    [ ( r, c ) ]
-                                )
-                    )
+    List.range 0 (boardsize_height board_size - 1)
+        |> andThen
+            (\r ->
+                List.range 0 (boardsize_width board_size - 1)
+                    |> andThen
+                        (\c ->
+                            [ ( r, c ) ]
+                        )
+            )
+
 
 nextMoves : Model -> Cell -> List Cell
 nextMoves model ( stRow, stCol ) =
@@ -110,7 +131,7 @@ nextMoves model ( stRow, stCol ) =
         jumps =
             List.map (\( kmRow, kmCol ) -> ( kmRow + stRow, kmCol + stCol )) km
     in
-    List.filter (\j -> List.member j model.board && not (List.member j model.path)) jumps
+    filter (\j -> List.member j model.board && not (List.member j model.path)) jumps
 
 
 bestMove : Model -> Maybe Cell
@@ -118,11 +139,15 @@ bestMove model =
     case List.head model.path of
         Just mph ->
             minimumBy (List.length << nextMoves model) (nextMoves model mph)
+
         _ ->
             Nothing
 
 
+
 -- Initialize the application - https://guide.elm-lang.org/effects/
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
     let
@@ -132,17 +157,21 @@ init _ =
 
         -- Initial chess board
         initial_board =
-            board_init (initial_size, initial_size)
+            board_init ( initial_size, initial_size )
 
         initial_path =
             []
+
         initial_pause =
             10
     in
-    ( Model initial_path initial_board initial_pause (initial_size, initial_size), Cmd.none )
+    ( Model initial_path initial_board initial_pause ( initial_size, initial_size ), Cmd.none )
+
 
 
 -- View the model - https://guide.elm-lang.org/effects/
+
+
 view : Model -> H.Html Msg
 view model =
     let
@@ -199,11 +228,13 @@ view model =
 
         table =
             [ HA.style "text-align" "center", HA.style "display" "table", HA.style "width" "auto", HA.style "margin" "auto" ]
+
         table_row =
             [ HA.style "display" "table-row", HA.style "width" "auto" ]
 
         table_cell =
             [ HA.style "display" "table-cell", HA.style "width" "auto", HA.style "padding" "1px 3px" ]
+
         rows =
             boardsize_height model.size
 
@@ -213,72 +244,78 @@ view model =
     H.div
         []
         [ H.h1 center [ H.text "Knight's Tour" ]
+
         -- controls
         , H.div
             table
-            [ H.div -- labels
+            [ H.div
+                -- labels
                 table_row
                 [ H.div
                     table_cell
-                    [ H.text "Rows"]
+                    [ H.text "Rows" ]
                 , H.div
                     table_cell
-                    [ H.text "Columns"]
+                    [ H.text "Columns" ]
                 , H.div
                     table_cell
-                    [ H.text ""]
+                    [ H.text "" ]
                 , H.div
                     table_cell
-                    [ H.text "Pause (ms)"]
+                    [ H.text "Pause (ms)" ]
                 ]
             , H.div
                 table_row
-                [ H.div -- Increase
+                [ H.div
+                    -- Increase
                     table_cell
-                    [ H.button [onClick <| SetSize ( boardsize_inc rows, cols )] [ H.text "▲"] ]
+                    [ H.button [ onClick <| SetSize ( boardsize_inc rows, cols ) ] [ H.text "▲" ] ]
                 , H.div
                     table_cell
-                    [ H.button [onClick <| SetSize ( rows, boardsize_inc cols )] [ H.text "▲"] ]
+                    [ H.button [ onClick <| SetSize ( rows, boardsize_inc cols ) ] [ H.text "▲" ] ]
                 , H.div
                     table_cell
-                    [ H.text ""]
+                    [ H.text "" ]
                 , H.div
                     table_cell
-                    [ H.button [onClick <| SetPause ( pause_inc model.pause_ms )] [ H.text "▲"] ]
+                    [ H.button [ onClick <| SetPause (pause_inc model.pause_ms) ] [ H.text "▲" ] ]
                 ]
             , H.div
                 table_row
-                [ H.div -- Value
+                [ H.div
+                    -- Value
                     table_cell
                     [ H.text <| String.fromInt rows ]
                 , H.div
                     table_cell
-                    [ H.text <| String.fromInt cols]
+                    [ H.text <| String.fromInt cols ]
                 , H.div
                     table_cell
-                    [ H.text ""]
+                    [ H.text "" ]
                 , H.div
                     table_cell
-                    [ H.text <| String.fromFloat model.pause_ms]
+                    [ H.text <| String.fromFloat model.pause_ms ]
                 ]
             , H.div
                 table_row
-                [ H.div -- Decrease
+                [ H.div
+                    -- Decrease
                     table_cell
-                    [ H.button [onClick <| SetSize ( boardsize_dec rows, cols )] [ H.text "▼"] ]
+                    [ H.button [ onClick <| SetSize ( boardsize_dec rows, cols ) ] [ H.text "▼" ] ]
                 , H.div
                     table_cell
-                    [ H.button [onClick <| SetSize ( rows, boardsize_dec cols )] [ H.text "▼"] ]
+                    [ H.button [ onClick <| SetSize ( rows, boardsize_dec cols ) ] [ H.text "▼" ] ]
                 , H.div
                     table_cell
-                    [ H.text ""]
+                    [ H.text "" ]
                 , H.div
                     table_cell
-                    [ H.button [onClick <| SetPause ( pause_dec model.pause_ms )] [ H.text "▼"] ]
+                    [ H.button [ onClick <| SetPause (pause_dec model.pause_ms) ] [ H.text "▼" ] ]
                 ]
             ]
         , H.h2 center [ H.text "(pick a square)" ]
-        , H.div -- chess board
+        , H.div
+            -- chess board
             center
             [ svg
                 [ version "1.1"
@@ -298,7 +335,11 @@ view model =
         , H.h3 center [ H.text <| "Unvisited count : " ++ String.fromInt unvisited ]
         ]
 
+
+
 -- Update the model - https://guide.elm-lang.org/effects/
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
@@ -329,15 +370,23 @@ update msg model =
     ( mo, Cmd.none )
 
 
+
 -- Subscribe to https://guide.elm-lang.org/effects/
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Time.every model.pause_ms Tick
 
+
+
 -- Application entry point
-main: Program () Model Msg
+
+
+main : Program () Model Msg
 main =
-    element -- https://package.elm-lang.org/packages/elm/browser/latest/Browser#element
+    element
+        -- https://package.elm-lang.org/packages/elm/browser/latest/Browser#element
         { init = init
         , view = view
         , update = update
